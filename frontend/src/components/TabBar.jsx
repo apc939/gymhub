@@ -36,7 +36,11 @@ export default function TabBar({ onStart }) {
         <span className="cir"><Icon name={S.active ? 'play' : 'dumbbell'} /></span>
         <span>{S.active ? t('Resume') : t('Start')}</span>
       </button>
-      <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
+      {user?.admin ? (
+        <Tab k="admin" icon="sparkles" to="/admin" label="Pacientes" />
+      ) : (
+        <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
+      )}
       <Tab k="library" icon="list" to="/library" label={t('Exercises')} />
     </nav>
   )
