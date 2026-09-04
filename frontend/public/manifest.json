@@ -1,7 +1,7 @@
 {
-  "name": "openGym",
-  "short_name": "openGym",
-  "description": "Personal gym & body weight tracker",
+  "name": "medandresparra-gymhub",
+  "short_name": "GymHub",
+  "description": "Plataforma de prescripción de entrenamiento - Dr. Andrés Parra (Medicina del Deporte)",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
