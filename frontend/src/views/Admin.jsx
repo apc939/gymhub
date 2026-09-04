@@ -10,6 +10,7 @@ import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
+import QRCode from '../components/QRCode.jsx'
 import '../admin.css'
 
 const rel = ts => {
@@ -32,32 +33,151 @@ const AdherencePill = ({ status, days }) => {
 
 const MOCK_PATIENTS = [
   {
-    id: 'patient-1', name: 'Carlos Mendoza (Fuerza & Salud)', created: '2026-08-10',
-    workouts: 14, workouts30d: 8, routinesCount: 2,
-    lastWorkout: new Date().toISOString().slice(0, 10), daysSinceLastWorkout: 0, adherenceStatus: 'active',
-    lastSync: Date.now() - 3600000, hasPush: true
+    id: 'patient-1',
+    name: 'Carlos Mendoza (Sedentario Iniciación)',
+    phone: '+573001234567',
+    created: '2026-08-10',
+    workouts: 14,
+    workouts30d: 8,
+    routinesCount: 2,
+    lastWorkout: new Date().toISOString().slice(0, 10),
+    daysSinceLastWorkout: 0,
+    adherenceStatus: 'active',
+    cardioMinutesWeek: 60,
+    cardioTargetWeek: 90,
+    lastSensation: 'good',
+    lastPain: false,
+    lastSync: Date.now() - 3600000,
+    hasPush: true
   },
   {
-    id: 'patient-2', name: 'María Elena Rodríguez (Lumbalgia)', created: '2026-08-15',
-    workouts: 9, workouts30d: 5, routinesCount: 1,
-    lastWorkout: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10),
-    daysSinceLastWorkout: 5, adherenceStatus: 'warning',
-    lastSync: Date.now() - 5 * 86400000, hasPush: false
+    id: 'patient-2',
+    name: 'Don Fernando Silva (Adulto Mayor · Sarcopenia)',
+    phone: '+573019876543',
+    created: '2026-08-01',
+    workouts: 6,
+    workouts30d: 3,
+    routinesCount: 1,
+    lastWorkout: new Date(Date.now() - 4 * 86400000).toISOString().slice(0, 10),
+    daysSinceLastWorkout: 4,
+    adherenceStatus: 'warning',
+    cardioMinutesWeek: 20,
+    cardioTargetWeek: 60,
+    lastSensation: 'easy',
+    lastPain: false,
+    lastSync: Date.now() - 4 * 86400000,
+    hasPush: true
   },
   {
-    id: 'patient-3', name: 'Fernando Silva (Adulto Mayor)', created: '2026-08-01',
-    workouts: 6, workouts30d: 1, routinesCount: 1,
-    lastWorkout: new Date(Date.now() - 12 * 86400000).toISOString().slice(0, 10),
-    daysSinceLastWorkout: 12, adherenceStatus: 'inactive',
-    lastSync: Date.now() - 12 * 86400000, hasPush: true
+    id: 'patient-3',
+    name: 'María Elena Rodríguez (Readaptación Lumbar)',
+    phone: '+573105554321',
+    created: '2026-08-15',
+    workouts: 9,
+    workouts30d: 5,
+    routinesCount: 1,
+    lastWorkout: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10),
+    daysSinceLastWorkout: 2,
+    adherenceStatus: 'active',
+    cardioMinutesWeek: 50,
+    cardioTargetWeek: 50,
+    lastSensation: 'hard',
+    lastPain: true,
+    lastPainArea: 'Zona Lumbar',
+    lastSync: Date.now() - 2 * 86400000,
+    hasPush: false
   },
   {
-    id: 'patient-4', name: 'Lucía Morales (Readaptación LCA)', created: '2026-09-02',
-    workouts: 0, workouts30d: 0, routinesCount: 1,
-    lastWorkout: null, daysSinceLastWorkout: null, adherenceStatus: 'new',
-    lastSync: Date.now(), hasPush: false
+    id: 'patient-4',
+    name: 'Jorge Restrepo (Riesgo de Abandono)',
+    phone: '+573158889900',
+    created: '2026-07-20',
+    workouts: 3,
+    workouts30d: 0,
+    routinesCount: 1,
+    lastWorkout: new Date(Date.now() - 9 * 86400000).toISOString().slice(0, 10),
+    daysSinceLastWorkout: 9,
+    adherenceStatus: 'inactive',
+    cardioMinutesWeek: 0,
+    cardioTargetWeek: 90,
+    lastSensation: null,
+    lastPain: false,
+    lastSync: Date.now() - 9 * 86400000,
+    hasPush: false
+  },
+  {
+    id: 'patient-5',
+    name: 'Lucía Gómez (Nueva Consulta · Post-Esguince)',
+    phone: '+573204441122',
+    created: '2026-09-03',
+    workouts: 0,
+    workouts30d: 0,
+    routinesCount: 1,
+    lastWorkout: null,
+    daysSinceLastWorkout: null,
+    adherenceStatus: 'new',
+    cardioMinutesWeek: 0,
+    cardioTargetWeek: 60,
+    lastSensation: null,
+    lastPain: false,
+    lastSync: Date.now(),
+    hasPush: false
   }
 ]
+
+function QRCodeModal({ code, close }) {
+  const toast = useUI(s => s.toast)
+  const inviteUrl = `${window.location.origin}${window.location.pathname}#/login?code=${encodeURIComponent(code)}`
+
+  const copyLink = () => {
+    navigator.clipboard?.writeText(inviteUrl).catch(() => {})
+    toast('Enlace copiado para enviar a tu paciente')
+  }
+
+  const shareWA = () => {
+    const text = encodeURIComponent(
+      `Hola, te saluda el Dr. Andrés Parra Charris. Aquí tienes tu enlace de activación para tu plan de entrenamiento en GymHub:\n\n${inviteUrl}\n\nCódigo de consulta: ${code}\n\n¡Comencemos a movernos!`
+    )
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+  }
+
+  return (
+    <div style={{ textAlign: 'center', padding: '10px 0' }}>
+      <h3 style={{ margin: '0 0 6px' }}>Código QR de Vinculación</h3>
+      <div className="dim small" style={{ marginBottom: 16 }}>
+        Pide a tu paciente que apunte la cámara de su teléfono o compártele el enlace directo.
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '14px 0' }}>
+        <QRCode text={inviteUrl} size={210} />
+      </div>
+      <div
+        className="card"
+        style={{
+          fontFamily: 'ui-monospace,SFMono-Regular,Menlo,monospace',
+          fontSize: 22,
+          fontWeight: 700,
+          letterSpacing: '.18em',
+          padding: '10px 0',
+          margin: '12px 0',
+          background: 'var(--surface-2)',
+          color: 'var(--acc)'
+        }}
+      >
+        {code}
+      </div>
+      <div className="row" style={{ gap: 8, marginTop: 14 }}>
+        <Button variant="primary" onClick={shareWA} icon="share">
+          Compartir por WhatsApp
+        </Button>
+        <Button onClick={copyLink} icon="clipboard">
+          Copiar Enlace
+        </Button>
+      </div>
+      <div style={{ height: 10 }} />
+      <Button variant="ghost" onClick={close}>Cerrar</Button>
+    </div>
+  )
+}
 
 function PrescribeRoutineModal({ patientId, patientName, onPrescribed, close }) {
   const S = useStore(s => s.S)
@@ -90,8 +210,8 @@ function PrescribeRoutineModal({ patientId, patientName, onPrescribed, close }) 
 
   return (
     <div style={{ padding: '6px 0' }}>
-      <h3 style={{ margin: '0 0 4px' }}>Prescribir a {patientName}</h3>
-      <div className="adm-lead">Asigna directamente una de tus rutinas maestras a la cuenta de este paciente.</div>
+      <h3 style={{ margin: '0 0 4px' }}>Prescribir Rutina a {patientName}</h3>
+      <div className="adm-lead">Asigna directamente una de tus rutinas maestras de fuerza a este paciente.</div>
       {S.routines.length ? (
         <>
           <div className="adm-field" style={{ margin: '14px 0' }}>
@@ -122,9 +242,120 @@ function PrescribeRoutineModal({ patientId, patientName, onPrescribed, close }) 
   )
 }
 
+function PrescribeCardioModal({ patientId, patientName, currentCardio, onPrescribed, close }) {
+  const toast = useUI(s => s.toast)
+  const [type, setType] = useState(currentCardio?.type || 'Caminata')
+  const [targetMinutes, setTargetMinutes] = useState(currentCardio?.targetMinutes || 30)
+  const [frequencyPerWeek, setFrequencyPerWeek] = useState(currentCardio?.frequencyPerWeek || 3)
+  const [intensity, setIntensity] = useState(currentCardio?.intensity || 'moderada')
+  const [note, setNote] = useState(currentCardio?.note || '')
+  const [loading, setLoading] = useState(false)
+
+  const handleSave = async () => {
+    setLoading(true)
+    const cardioData = {
+      type,
+      targetMinutes: Number(targetMinutes) || 30,
+      frequencyPerWeek: Number(frequencyPerWeek) || 3,
+      intensity,
+      note: note.trim()
+    }
+    try {
+      await api('/api/admin/patient/prescribe-cardio', {
+        method: 'POST',
+        body: JSON.stringify({ patientId, cardio: cardioData })
+      })
+    } catch (e) {
+      // Offline fallback: almacenar en localStorage
+      localStorage.setItem('md_mock_cardio_' + patientId, JSON.stringify(cardioData))
+    }
+    toast(`Prescripción de ${type} guardada con éxito`)
+    setLoading(false)
+    onPrescribed()
+    close()
+  }
+
+  return (
+    <div style={{ padding: '6px 0', textAlign: 'left' }}>
+      <h3 style={{ margin: '0 0 4px' }}>Prescripción Cardiorrespiratoria</h3>
+      <div className="dim small" style={{ marginBottom: 14 }}>
+        Dosificación aeróbica para {patientName} (Medicina del Deporte).
+      </div>
+
+      <label className="small muted" style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Tipo de Ejercicio:</label>
+      <select
+        className="input"
+        value={type}
+        onChange={e => setType(e.target.value)}
+        style={{ width: '100%', marginBottom: 12 }}
+      >
+        <option value="Caminata">🚶 Caminata (Cinta o Exterior)</option>
+        <option value="Bicicleta">🚴 Bicicleta (Estática o Paseo)</option>
+        <option value="Elíptica">🏃 Elíptica (Bajo impacto)</option>
+        <option value="Natación">🏊 Natación / Hidrogimnasia</option>
+        <option value="Trote Suave">👟 Trote Suave</option>
+      </select>
+
+      <div className="row" style={{ gap: 10, marginBottom: 12 }}>
+        <div style={{ flex: 1 }}>
+          <label className="small muted" style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Minutos por sesión:</label>
+          <input
+            type="number"
+            className="input"
+            value={targetMinutes}
+            min={10}
+            max={120}
+            step={5}
+            onChange={e => setTargetMinutes(e.target.value)}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label className="small muted" style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Días por semana:</label>
+          <input
+            type="number"
+            className="input"
+            value={frequencyPerWeek}
+            min={1}
+            max={7}
+            onChange={e => setFrequencyPerWeek(e.target.value)}
+            style={{ width: '100%' }}
+          />
+        </div>
+      </div>
+
+      <label className="small muted" style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Intensidad (Test de la Conversación):</label>
+      <select
+        className="input"
+        value={intensity}
+        onChange={e => setIntensity(e.target.value)}
+        style={{ width: '100%', marginBottom: 12 }}
+      >
+        <option value="suave">🟢 Suave (Puede hablar fluidamente sin agitarse)</option>
+        <option value="moderada">🟡 Moderada (Puede hablar frases cortas, respiración profunda)</option>
+        <option value="vigorosa">🟠 Vigorosa (Le cuesta hablar continuamente)</option>
+      </select>
+
+      <label className="small muted" style={{ display: 'block', marginBottom: 4, fontWeight: 600 }}>Indicación o Cuidado Especial:</label>
+      <input
+        type="text"
+        className="input"
+        placeholder="Ej: Calzado amortiguado, detenerse si hay molestia..."
+        value={note}
+        onChange={e => setNote(e.target.value)}
+        style={{ width: '100%', marginBottom: 16 }}
+      />
+
+      <Button variant="primary" onClick={handleSave} disabled={loading} style={{ width: '100%' }}>
+        {loading ? 'Guardando...' : 'Confirmar Prescripción Cardio'}
+      </Button>
+    </div>
+  )
+}
+
 function UserDetail({ id, onChanged, close }) {
   const [d, setD] = useState(null)
-  const [tab, setTab] = useState('prescriptions') // 'prescriptions' | 'history' | 'notes'
+  const [tab, setTab] = useState('prescriptions') // 'prescriptions' | 'cardio' | 'history' | 'notes'
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
 
@@ -138,6 +369,14 @@ function UserDetail({ id, onChanged, close }) {
         // Modo offline / local dev: simular expediente clínico con prescripciones locales
         const mockP = MOCK_PATIENTS.find(p => p.id === id) || { id, name: 'Paciente', created: '2026-08-01' }
         const localPrescriptions = JSON.parse(localStorage.getItem('md_mock_prescriptions_' + id) || '[]')
+        const localCardio = JSON.parse(localStorage.getItem('md_mock_cardio_' + id) || 'null')
+        const defaultCardio = localCardio || {
+          type: id === 'patient-2' ? 'Caminata Suave' : id === 'patient-3' ? 'Elíptica' : 'Caminata',
+          targetMinutes: id === 'patient-2' ? 20 : 30,
+          frequencyPerWeek: 3,
+          intensity: id === 'patient-2' ? 'suave' : 'moderada',
+          note: id === 'patient-3' ? 'Detener si hay molestia lumbar' : 'Test del habla: conversar sin agitarse'
+        }
         setD({
           user: mockP,
           workouts: [
@@ -147,6 +386,10 @@ function UserDetail({ id, onChanged, close }) {
           routines: [
             { id: 'r1', name: 'Rutina Prescrita: Readaptación y Fuerza', count: 4, ex: [{ id: 'Sentadilla en Banco' }, { id: 'Press Militar Asistido' }] },
             ...localPrescriptions
+          ],
+          cardio: defaultCardio,
+          cardioLogs: [
+            { id: 'cl1', type: defaultCardio.type, minutes: defaultCardio.targetMinutes, date: '2026-09-02', effort: 'good', pain: mockP.lastPain || false, painArea: mockP.lastPainArea || null }
           ],
           bodyweight: [
             { d: '2026-09-01', w: 74.5 },
@@ -170,6 +413,8 @@ function UserDetail({ id, onChanged, close }) {
   const workouts = d.workouts || []
   const routines = d.routines || []
   const bodyweight = d.bodyweight || []
+  const cardio = d.cardio || null
+  const cardioLogs = d.cardioLogs || []
 
   const removeRoutine = routineId => confirmSheet({
     title: '¿Retirar rutina prescrita?',
@@ -197,6 +442,20 @@ function UserDetail({ id, onChanged, close }) {
       .catch(e => toast(e.message))
   }
 
+  const contactWhatsApp = () => {
+    let msg = `Hola ${u.name.split(' ')[0]}, te saluda el Dr. Andrés Parra Charris de GymHub.`
+    if (u.adherenceStatus === 'inactive') {
+      msg += ` Noté que llevas unos días sin registrar tu actividad. ¿Cómo te has sentido? Recuerda que el movimiento adaptado es medicina y estoy aquí para apoyarte.`
+    } else if (u.lastPain) {
+      msg += ` Vi tu reporte de molestia (${u.lastPainArea || 'articular'}) en tu última sesión. Quiero saber cómo va la evolución para ajustar los ejercicios de tu plan si es necesario.`
+    } else {
+      msg += ` Quería felicitarte por tu constancia en tus sesiones de fuerza y cardio de esta semana. ¡Excelente progreso!`
+    }
+    const phoneClean = (u.phone || '').replace(/[^0-9]/g, '')
+    const url = phoneClean ? `https://wa.me/${phoneClean}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`
+    window.open(url, '_blank')
+  }
+
   return <>
     <div className="row between" style={{ alignItems: 'flex-start' }}>
       <div>
@@ -206,23 +465,47 @@ function UserDetail({ id, onChanged, close }) {
         </div>
       </div>
       <div className="row" style={{ gap: 6 }}>
+        <button
+          className="btn sm"
+          style={{ background: 'var(--green)', color: '#000', fontWeight: 700, fontSize: 12, padding: '4px 10px' }}
+          onClick={contactWhatsApp}
+          title="Contactar al paciente por WhatsApp"
+        >
+          WhatsApp
+        </button>
         {u.admin && <span className="adm-pill acc">Médico</span>}
         {u.disabled && <span className="adm-pill bad">En pausa</span>}
       </div>
     </div>
 
+    {/* Pain / Discomfort Alert */}
+    {u.lastPain && (
+      <div className="card" style={{ padding: '10px 14px', background: 'rgba(255, 69, 58, 0.12)', border: '1px solid var(--red)', margin: '12px 0 6px', borderRadius: 'var(--r-card)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--red)', fontWeight: 700, fontSize: 13 }}>
+          <Icon name="sparkles" />
+          <span>Alerta Clínica: Molestia en {u.lastPainArea || 'zona articular'}</span>
+        </div>
+        <div className="dim small" style={{ marginTop: 3 }}>
+          Reportada en su última sesión. Puedes ajustar la rutina o contactar al paciente.
+        </div>
+      </div>
+    )}
+
     {/* Metric tiles */}
     <div className="tiles" style={{ textAlign: 'left', margin: '14px 0 10px' }}>
       <div className="tile"><div className="l">Entrenamientos</div><div className="v" style={{ fontSize: '1.1rem' }}>{workouts.length}</div></div>
       <div className="tile"><div className="l">Rutinas activas</div><div className="v" style={{ fontSize: '1.1rem' }}>{routines.length}</div></div>
-      <div className="tile"><div className="l">Pesajes</div><div className="v" style={{ fontSize: '1.1rem' }}>{bodyweight.length}</div></div>
+      <div className="tile"><div className="l">Cardio semanal</div><div className="v" style={{ fontSize: '1.1rem', color: (u.cardioMinutesWeek || 0) >= (u.cardioTargetWeek || 60) ? 'var(--green)' : undefined }}>{u.cardioMinutesWeek || 0}/{u.cardioTargetWeek || 60}m</div></div>
       <div className="tile"><div className="l">Última sinc.</div><div className="v" style={{ fontSize: '.85rem' }}>{d.lastSync ? rel(d.lastSync) : '—'}</div></div>
     </div>
 
     {/* Navigation Tabs */}
     <div className="chips" style={{ margin: '10px 0 14px' }}>
       <button className={'chip' + (tab === 'prescriptions' ? ' on' : '')} onClick={() => setTab('prescriptions')}>
-        📋 Rutinas ({routines.length})
+        📋 Fuerza ({routines.length})
+      </button>
+      <button className={'chip' + (tab === 'cardio' ? ' on' : '')} onClick={() => setTab('cardio')}>
+        🏃 Cardio ({cardio ? 'Activo' : 'Sin plan'})
       </button>
       <button className={'chip' + (tab === 'history' ? ' on' : '')} onClick={() => setTab('history')}>
         📊 Historial ({workouts.length})
@@ -232,11 +515,11 @@ function UserDetail({ id, onChanged, close }) {
       </button>
     </div>
 
-    {/* Tab 1: Prescriptions */}
+    {/* Tab 1: Prescriptions (Fuerza) */}
     {tab === 'prescriptions' && (
       <div>
         <div className="row between" style={{ marginBottom: 10 }}>
-          <h4 className="sec" style={{ margin: 0 }}>Rutinas Prescritas al Paciente</h4>
+          <h4 className="sec" style={{ margin: 0 }}>Rutinas de Fuerza Prescritas</h4>
           <Button
             size="sm"
             variant="primary"
@@ -293,10 +576,82 @@ function UserDetail({ id, onChanged, close }) {
       </div>
     )}
 
-    {/* Tab 2: Workouts History */}
+    {/* Tab 2: Cardio Prescrito */}
+    {tab === 'cardio' && (
+      <div>
+        <div className="row between" style={{ marginBottom: 10 }}>
+          <h4 className="sec" style={{ margin: 0 }}>Prescripción Cardiorrespiratoria</h4>
+          <Button
+            size="sm"
+            variant="primary"
+            icon="sparkles"
+            onClick={() => openSheet(c => (
+              <PrescribeCardioModal
+                patientId={u.id}
+                patientName={u.name}
+                currentCardio={cardio}
+                onPrescribed={() => { loadDetail(); onChanged() }}
+                close={c}
+              />
+            ))}
+          >
+            {cardio ? 'Ajustar Cardio' : 'Prescribir Cardio'}
+          </Button>
+        </div>
+
+        {cardio ? (
+          <div className="card" style={{ padding: 14, margin: '0 0 12px' }}>
+            <div className="row between" style={{ marginBottom: 6 }}>
+              <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--blue)' }}>
+                {cardio.type}
+              </div>
+              <span className="adm-pill ok">{cardio.frequencyPerWeek} días / semana</span>
+            </div>
+            <div className="small" style={{ marginBottom: 4 }}>
+              <strong>Dosis:</strong> {cardio.targetMinutes} minutos por sesión · Intensidad: <span style={{ textTransform: 'capitalize' }}>{cardio.intensity}</span>
+            </div>
+            {cardio.note && (
+              <div className="dim small" style={{ marginTop: 6, fontStyle: 'italic', borderTop: '1px solid var(--sep)', paddingTop: 6 }}>
+                Indicación: "{cardio.note}"
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="adm-empty" style={{ margin: '14px 0' }}>
+            Sin plan de cardio asignado. Toca "+ Prescribir Cardio" para definir caminata, bici u otra modalidad aeróbica.
+          </div>
+        )}
+
+        {/* Historial reciente de cardio */}
+        <h4 className="sec" style={{ margin: '14px 0 8px' }}>Sesiones Aeróbicas Registradas</h4>
+        {cardioLogs.length ? (
+          <div className="list" style={{ gap: 6 }}>
+            {cardioLogs.map(cl => (
+              <div key={cl.id} className="row between" style={{ padding: '8px 10px', background: 'var(--surface-2)', borderRadius: 'var(--r-card)' }}>
+                <div>
+                  <div className="small" style={{ fontWeight: 600 }}>{cl.type} · {cl.minutes} min</div>
+                  <div className="dim" style={{ fontSize: '.72rem' }}>
+                    {fmtDate(cl.date, true)} · Esfuerzo: {cl.effort === 'easy' ? 'Fácil' : cl.effort === 'hard' ? 'Muy exigente' : 'Adecuado'}
+                  </div>
+                </div>
+                {cl.pain ? (
+                  <span className="adm-pill bad" style={{ fontSize: 10 }}>⚠️ {cl.painArea || 'Molestia'}</span>
+                ) : (
+                  <span className="adm-pill ok" style={{ fontSize: 10 }}>🟢 Cero dolor</span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="adm-empty">El paciente no ha registrado sesiones de cardio aún.</div>
+        )}
+      </div>
+    )}
+
+    {/* Tab 3: Workouts History (Fuerza) */}
     {tab === 'history' && (
       <div>
-        <h4 className="sec" style={{ margin: '0 0 10px' }}>Historial de Sesiones Registradas</h4>
+        <h4 className="sec" style={{ margin: '0 0 10px' }}>Historial de Sesiones de Fuerza</h4>
         {workouts.length ? (
           <div className="list" style={{ gap: 0 }}>
             {workouts.slice(0, 40).map(w => (
@@ -317,7 +672,7 @@ function UserDetail({ id, onChanged, close }) {
       </div>
     )}
 
-    {/* Tab 3: Confidential Local Medical Notes */}
+    {/* Tab 4: Confidential Local Medical Notes */}
     {tab === 'notes' && (
       <div>
         <div className="row between" style={{ marginBottom: 6 }}>
@@ -366,9 +721,24 @@ function UserDetail({ id, onChanged, close }) {
 
 function InvitesCard({ invites, reload, inviteOnly }) {
   const toast = useUI(s => s.toast)
+  const openSheet = useUI(s => s.openSheet)
+
+  const showQR = code => openSheet(close => <QRCodeModal code={code} close={close} />)
+
   const gen = () => api('/api/admin/invites/new', { method: 'POST', body: '{}' })
-    .then(({ invite }) => { navigator.clipboard?.writeText(invite.code).catch(() => {}); toast('Código ' + invite.code + ' copiado al portapapeles'); reload() })
-    .catch(e => toast(e.message))
+    .then(({ invite }) => {
+      navigator.clipboard?.writeText(invite.code).catch(() => {})
+      toast('Código ' + invite.code + ' generado')
+      reload()
+      showQR(invite.code)
+    })
+    .catch(e => {
+      // offline / mock fallback
+      const mockCode = 'GH-' + Math.random().toString(36).substring(2, 6).toUpperCase()
+      toast('Código ' + mockCode + ' generado')
+      showQR(mockCode)
+    })
+
   const revoke = code => confirmSheet({
     title: '¿Revocar código ' + code + '?', message: 'Nadie más podrá usarlo para crear cuenta. Los pacientes ya registrados no se ven afectados.',
     confirmText: 'Revocar', danger: true,
@@ -381,21 +751,22 @@ function InvitesCard({ invites, reload, inviteOnly }) {
 
   return <div className="card">
     <div className="row between">
-      <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Códigos de Acceso para Pacientes</h2>
+      <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Códigos & QR de Vinculación de Pacientes</h2>
       <Button variant="primary" size="sm" onClick={gen} icon="plus">Nuevo código</Button>
     </div>
     <div className="adm-lead">
       {inviteOnly
-        ? 'El registro requiere invitación: entrega uno de estos códigos a tu paciente para que active su perfil en consulta.'
-        : 'Entrega códigos a tus pacientes para vincularlos directamente a tu consulta médica.'}
+        ? 'El registro requiere invitación: genera un código o QR para que tu paciente active su perfil en consulta o por WhatsApp.'
+        : 'Entrega códigos o códigos QR a tus pacientes para vincularlos directamente a tu consulta médica.'}
     </div>
     {open.length ? <>
-      <div className="adm-group-t">Disponibles · Toca para copiar</div>
+      <div className="adm-group-t">Disponibles · Toca el QR para proyectarlo o compartirlo</div>
       {open.map(i => <div key={i.code} className="row between" style={{ padding: '6px 0', borderBottom: 'var(--hair) solid var(--sep)' }}>
-        <button className="adm-code" onClick={() => { navigator.clipboard?.writeText(i.code).catch(() => {}); toast('Código copiado') }} aria-label={'copiar ' + i.code}>{i.code}</button>
+        <button className="adm-code" onClick={() => showQR(i.code)} aria-label={'qr ' + i.code}>{i.code}</button>
         <div className="row" style={{ gap: 4 }}>
-          <button className="iconbtn adm-iconbtn" onClick={() => { navigator.clipboard?.writeText(i.code).catch(() => {}); toast('Código copiado') }} aria-label="copiar"><Icon name="clipboard" /></button>
-          <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red)' }} onClick={() => revoke(i.code)} aria-label="revocar"><Icon name="trash" /></button>
+          <button className="iconbtn adm-iconbtn" title="Mostrar Código QR / WhatsApp" onClick={() => showQR(i.code)} aria-label="qr"><Icon name="qrcode" /></button>
+          <button className="iconbtn adm-iconbtn" title="Copiar código" onClick={() => { navigator.clipboard?.writeText(i.code).catch(() => {}); toast('Código copiado') }} aria-label="copiar"><Icon name="clipboard" /></button>
+          <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red)' }} title="Revocar código" onClick={() => revoke(i.code)} aria-label="revocar"><Icon name="trash" /></button>
         </div>
       </div>)}
     </> : null}
@@ -579,6 +950,16 @@ export default function Admin() {
                 {u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)' }} />}
                 <span style={{ fontWeight: 600 }}>{u.name}</span>
                 <AdherencePill status={u.adherenceStatus} days={u.daysSinceLastWorkout} />
+                {u.cardioTargetWeek > 0 && (
+                  <span className="adm-pill" style={{ fontSize: 10, background: 'rgba(59,130,246,0.12)', color: 'var(--acc)' }}>
+                    🏃 {u.cardioMinutesWeek || 0}/{u.cardioTargetWeek}m cardio
+                  </span>
+                )}
+                {u.lastPain && (
+                  <span className="adm-pill bad" style={{ fontSize: 10 }}>
+                    ⚠️ {u.lastPainArea ? `Molestia: ${u.lastPainArea}` : 'Molestia articular'}
+                  </span>
+                )}
                 {u.admin && <span className="adm-pill acc" style={{ fontSize: 10 }}>Médico</span>}
                 {u.disabled && <span className="adm-pill bad" style={{ fontSize: 10 }}>Pausa</span>}
               </div>

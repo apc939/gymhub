@@ -6,15 +6,15 @@ import { t } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 
-function RegisterSheet({ close }) {
+function RegisterSheet({ close, initialCode = '' }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
   const config = useStore(s => s.config)
   const [name, setName] = useState('')
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState(initialCode)
   const inviteOnly = !!config?.invite_only
   const ref = useRef(null)
   useEffect(() => { setTimeout(() => ref.current?.focus(), 250) }, [])
@@ -36,11 +36,13 @@ function RegisterSheet({ close }) {
     <h3>{t('Create your profile')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('Pick a name, then confirm with {0}. The passkey is saved in your device — no password needed.', BIO)}</div>
     <input ref={ref} className="input" placeholder={t('Your name')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
-    {inviteOnly && <>
+    {(inviteOnly || initialCode) && <>
       <div style={{ height: 10 }} />
       <input className="input" placeholder={t('Invite code')} maxLength={40} value={code}
         onChange={e => setCode(e.target.value.toUpperCase())} style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
-      <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only — enter the code you were given.')}</div>
+      <div className="dim small" style={{ marginTop: 6, color: 'var(--acc)', fontWeight: 500 }}>
+        ✓ Código de vinculación médica · Dr. Andrés Parra Charris
+      </div>
     </>}
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
@@ -49,6 +51,7 @@ function RegisterSheet({ close }) {
 
 export default function Login() {
   const nav = useNavigate()
+  const loc = useLocation()
   const user = useStore(s => s.user)
   const setUser = useStore(s => s.setUser)
   const pullState = useStore(s => s.pullState)
@@ -61,6 +64,16 @@ export default function Login() {
       nav('/admin', { replace: true })
     }
   }, [user?.admin, nav])
+
+  // Detect QR code / deep link invite code on load
+  useEffect(() => {
+    const rawSearch = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : loc.search.replace(/^\?/, '')
+    const params = new URLSearchParams(rawSearch)
+    const inviteCode = params.get('code')
+    if (inviteCode) {
+      useUI.getState().openSheet(close => <RegisterSheet close={close} initialCode={inviteCode.toUpperCase()} />)
+    }
+  }, [loc])
 
   const signIn = async () => {
     try {

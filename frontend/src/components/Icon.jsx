@@ -113,6 +113,8 @@ const P = {
   shuffle: <><path d="M3.6 7.2h2.9c1.6 0 2.8.9 3.8 2.4l3 4.8c1 1.5 2.2 2.4 3.8 2.4h2.9M3.6 16.8h2.9c1.6 0 2.8-.9 3.8-2.4l.7-1.1M15.6 9.9l.7-1.1c1-1.5 2.2-2.4 3.8-2.4h1.9" /><path d="m17.9 4.3 2.8 2.1-2.8 2.1M17.9 14.7l2.8 2.1-2.8 2.1" /></>,
   info: <><circle cx="12" cy="12" r="8.2" /><path d="M12 11v5.4" /><circle cx="12" cy="7.9" r=".9" fill="currentColor" stroke="none" /></>,
   warning: <><path d="M12 3.4 21.2 19.4H2.8Z" /><path d="M12 9.6v4.4" /><circle cx="12" cy="16.6" r=".9" fill="currentColor" stroke="none" /></>,
+  share: <><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" /></>,
+  qrcode: <><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5" /><rect x="5.5" y="5.5" width="2.5" height="2.5" fill="currentColor" stroke="none" /><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5" /><rect x="16" y="5.5" width="2.5" height="2.5" fill="currentColor" stroke="none" /><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5" /><rect x="5.5" y="16" width="2.5" height="2.5" fill="currentColor" stroke="none" /><path d="M14 14h2.5v2.5H14zM18 14h2.5v2.5H18zM14 18h2.5v2.5H14zM18 18h2.5v2.5H18z" fill="currentColor" stroke="none" /></>,
 }
 
 // A few keys are aliases so call sites can say what they mean.
@@ -122,6 +124,7 @@ P.exercises = P.magnifier
 P.weight = P.scale
 P.streak = P.flame
 P.done = P.check
+P.qr = P.qrcode
 
 export const ICON_NAMES = Object.keys(P)
 
