@@ -847,28 +847,51 @@ const routes = {
     json(res, 200, { ok: true });
   },
 
-  /* ---------- admin dashboard ---------- */
-  // One row per user, cheap enough for a personal instance (reads each state file once).
+  /* ---------- admin dashboard & patient management ---------- */
+  // Reads each state file once and calculates clinical adherence metrics.
   'GET /api/admin/users': async (req, res) => {
     if (!requireAdmin(req, res)) return;
+    const now = Date.now();
     const users = db.users.map(u => {
       const S = readState(u.id) || {};
       const workouts = S.workouts || [];
       const last = workouts[workouts.length - 1];
+      const routines = S.routines || [];
+
+      // Clinical adherence calculation (Medicina del Deporte)
+      let daysSinceLastWorkout = null;
+      let adherenceStatus = 'new'; // 'active' (<=3d) | 'warning' (4-7d) | 'inactive' (>7d) | 'new'
+      if (last && last.d) {
+        const lastDate = new Date(last.d + 'T12:00:00');
+        daysSinceLastWorkout = Math.max(0, Math.floor((now - lastDate.getTime()) / 86400000));
+        if (daysSinceLastWorkout <= 3) adherenceStatus = 'active';
+        else if (daysSinceLastWorkout <= 7) adherenceStatus = 'warning';
+        else adherenceStatus = 'inactive';
+      } else if (workouts.length === 0) {
+        adherenceStatus = 'new';
+      }
+
+      const thirtyDaysAgo = new Date(now - 30 * 86400000).toISOString().slice(0, 10);
+      const workouts30d = workouts.filter(w => w.d >= thirtyDaysAgo).length;
+
       return {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null,
         workouts: workouts.length,
+        workouts30d,
+        routinesCount: routines.length,
         lastWorkout: last ? last.d : null,
+        daysSinceLastWorkout,
+        adherenceStatus,
         lastSync: S._ts || null,
         hasPush: db.subs.some(s => s.userId === u.id),
         live: livePresence(u.id)
       };
     });
-    json(res, 200, { users, invite_only: INVITE_ONLY, now: Date.now() });
+    json(res, 200, { users, invite_only: INVITE_ONLY, now });
   },
 
-  // Drill-down: full workout history + body-weight log for one user.
+  // Drill-down: full workout history, routines, and weekly plan for one patient.
   'GET /api/admin/user': async (req, res) => {
     if (!requireAdmin(req, res)) return;
     const id = new URL(req.url, 'http://x').searchParams.get('id');
@@ -879,10 +902,67 @@ const routes = {
       user: { id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null },
       unit: S.unit || 'kg',
       lastSync: S._ts || null,
-      routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
+      routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length, ex: r.ex || [] })),
+      week: S.week || {},
+      dayPlan: S.dayPlan || {},
       bodyweight: S.bodyweight || [],
       workouts: (S.workouts || []).slice().reverse()   // newest first for display
     });
+  },
+
+  // Doctor prescribes or updates a routine in a patient profile
+  'POST /api/admin/patient/prescribe-routine': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const { patientId, routine } = body;
+    if (!patientId || !routine || !routine.name) return json(res, 400, { error: 'patientId and valid routine required' });
+    const u = db.users.find(x => x.id === patientId);
+    if (!u) return json(res, 404, { error: 'patient not found' });
+    
+    const S = readState(patientId) || {};
+    S.routines = S.routines || [];
+    const idx = S.routines.findIndex(r => r.id === routine.id);
+    if (idx >= 0) S.routines[idx] = routine;
+    else S.routines.push(routine);
+    S._ts = Date.now();
+    atomicWrite(stateFile(patientId), JSON.stringify(S));
+    audit(req, 'admin.patient.prescribe_routine', { user: admin, target: u, routine: routine.name });
+    json(res, 200, { ok: true, routine });
+  },
+
+  // Doctor deletes a prescribed routine from a patient profile
+  'POST /api/admin/patient/remove-routine': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const { patientId, routineId } = body;
+    if (!patientId || !routineId) return json(res, 400, { error: 'patientId and routineId required' });
+    const u = db.users.find(x => x.id === patientId);
+    if (!u) return json(res, 404, { error: 'patient not found' });
+    
+    const S = readState(patientId) || {};
+    S.routines = (S.routines || []).filter(r => r.id !== routineId);
+    S._ts = Date.now();
+    atomicWrite(stateFile(patientId), JSON.stringify(S));
+    audit(req, 'admin.patient.remove_routine', { user: admin, target: u, routineId });
+    json(res, 200, { ok: true });
+  },
+
+  // Doctor sets or updates the weekly plan of a patient
+  'POST /api/admin/patient/prescribe-plan': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const { patientId, week, dayPlan } = body;
+    if (!patientId) return json(res, 400, { error: 'patientId required' });
+    const u = db.users.find(x => x.id === patientId);
+    if (!u) return json(res, 404, { error: 'patient not found' });
+    
+    const S = readState(patientId) || {};
+    if (week) S.week = week;
+    if (dayPlan) S.dayPlan = dayPlan;
+    S._ts = Date.now();
+    atomicWrite(stateFile(patientId), JSON.stringify(S));
+    audit(req, 'admin.patient.prescribe_plan', { user: admin, target: u });
+    json(res, 200, { ok: true });
   },
 
   'POST /api/admin/user/disable': async (req, res) => {
