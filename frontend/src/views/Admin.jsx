@@ -148,6 +148,11 @@ function UserDetail({ id, onChanged, close }) {
             { id: 'r1', name: 'Rutina Prescrita: Readaptación y Fuerza', count: 4, ex: [{ id: 'Sentadilla en Banco' }, { id: 'Press Militar Asistido' }] },
             ...localPrescriptions
           ],
+          bodyweight: [
+            { d: '2026-09-01', w: 74.5 },
+            { d: '2026-08-15', w: 75.2 }
+          ],
+          lastSync: Date.now() - 3600000,
           unit: 'kg'
         })
       })
@@ -161,7 +166,10 @@ function UserDetail({ id, onChanged, close }) {
   }
 
   if (!d) return <div className="muted small" style={{ padding: 20, textAlign: 'center' }}>Cargando expediente clínico…</div>
-  const u = d.user
+  const u = d.user || {}
+  const workouts = d.workouts || []
+  const routines = d.routines || []
+  const bodyweight = d.bodyweight || []
 
   const removeRoutine = routineId => confirmSheet({
     title: '¿Retirar rutina prescrita?',
@@ -205,19 +213,19 @@ function UserDetail({ id, onChanged, close }) {
 
     {/* Metric tiles */}
     <div className="tiles" style={{ textAlign: 'left', margin: '14px 0 10px' }}>
-      <div className="tile"><div className="l">Entrenamientos</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.workouts.length}</div></div>
-      <div className="tile"><div className="l">Rutinas activas</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.routines.length}</div></div>
-      <div className="tile"><div className="l">Pesajes</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.bodyweight.length}</div></div>
-      <div className="tile"><div className="l">Última sinc.</div><div className="v" style={{ fontSize: '.85rem' }}>{rel(d.lastSync)}</div></div>
+      <div className="tile"><div className="l">Entrenamientos</div><div className="v" style={{ fontSize: '1.1rem' }}>{workouts.length}</div></div>
+      <div className="tile"><div className="l">Rutinas activas</div><div className="v" style={{ fontSize: '1.1rem' }}>{routines.length}</div></div>
+      <div className="tile"><div className="l">Pesajes</div><div className="v" style={{ fontSize: '1.1rem' }}>{bodyweight.length}</div></div>
+      <div className="tile"><div className="l">Última sinc.</div><div className="v" style={{ fontSize: '.85rem' }}>{d.lastSync ? rel(d.lastSync) : '—'}</div></div>
     </div>
 
     {/* Navigation Tabs */}
     <div className="chips" style={{ margin: '10px 0 14px' }}>
       <button className={'chip' + (tab === 'prescriptions' ? ' on' : '')} onClick={() => setTab('prescriptions')}>
-        📋 Rutinas ({d.routines.length})
+        📋 Rutinas ({routines.length})
       </button>
       <button className={'chip' + (tab === 'history' ? ' on' : '')} onClick={() => setTab('history')}>
-        📊 Historial ({d.workouts.length})
+        📊 Historial ({workouts.length})
       </button>
       <button className={'chip' + (tab === 'notes' ? ' on' : '')} onClick={() => setTab('notes')}>
         🔒 Notas Médicas
@@ -246,9 +254,9 @@ function UserDetail({ id, onChanged, close }) {
           </Button>
         </div>
 
-        {d.routines.length ? (
+        {routines.length ? (
           <div className="list" style={{ gap: 8 }}>
-            {d.routines.map(r => (
+            {routines.map(r => (
               <div key={r.id} className="card" style={{ padding: '10px 12px', margin: 0 }}>
                 <div className="row between">
                   <div>
@@ -289,9 +297,9 @@ function UserDetail({ id, onChanged, close }) {
     {tab === 'history' && (
       <div>
         <h4 className="sec" style={{ margin: '0 0 10px' }}>Historial de Sesiones Registradas</h4>
-        {d.workouts.length ? (
+        {workouts.length ? (
           <div className="list" style={{ gap: 0 }}>
-            {d.workouts.slice(0, 40).map(w => (
+            {workouts.slice(0, 40).map(w => (
               <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
                 <div>
                   <div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
