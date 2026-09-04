@@ -265,6 +265,8 @@ export default {
   'Sign out?': '¿Cerrar sesión?',
   'Your data is synced to your profile first, then cleared from this device.': 'Tus datos se sincronizan primero con tu perfil y luego se borran de este dispositivo.',
   'Sign out': 'Cerrar sesión',
+  'Exit guest mode': 'Salir del modo invitado',
+  'Return to the welcome and login screen.': 'Volver a la pantalla de bienvenida e inicio de sesión.',
   'Sign out everywhere?': '¿Cerrar sesión en todos los dispositivos?',
   'Signs this profile out on every device, including this one. Your passkeys keep working — sign in with them again anytime.': 'Cierra la sesión de este perfil en todos los dispositivos, incluido este. Tus passkeys siguen funcionando — puedes volver a iniciar sesión con ellas cuando quieras.',
   'Sign out everywhere': 'Cerrar sesión en todos los dispositivos',
