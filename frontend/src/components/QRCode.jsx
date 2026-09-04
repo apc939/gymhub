@@ -1,48 +1,57 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import QRCodeLib from 'qrcode'
 import { generateQRCodeMatrix } from '../lib/qr.js'
 
-export default function QRCode({ text, size = 200, bg = '#ffffff', fg = '#000000' }) {
-  const matrix = useMemo(() => {
-    try {
-      return generateQRCodeMatrix(text)
-    } catch (e) {
-      console.error('Error generating QR:', e)
-      return null
-    }
-  }, [text])
+export default function QRCode({ text, size = 220, bg = '#ffffff', fg = '#000000' }) {
+  const [svg, setSvg] = useState('')
 
-  if (!matrix) return null
-  const count = matrix.length
-  const cellSize = size / (count + 4) // with 2-module quiet zone
-  const offset = cellSize * 2
+  useEffect(() => {
+    if (!text) return
+    QRCodeLib.toString(text, {
+      type: 'svg',
+      width: size,
+      margin: 4, // 4-module quiet zone required by ISO/IEC 18004 for phone cameras
+      color: {
+        dark: fg,
+        light: bg
+      },
+      errorCorrectionLevel: 'M'
+    })
+      .then(setSvg)
+      .catch(err => {
+        console.error('Error generating QR with qrcode library:', err)
+      })
+  }, [text, size, bg, fg])
 
-  const rects = []
-  for (let r = 0; r < count; r++) {
-    for (let c = 0; c < count; c++) {
-      if (matrix[r][c] === 1) {
-        rects.push(
-          <rect
-            key={`${r}-${c}`}
-            x={offset + c * cellSize}
-            y={offset + r * cellSize}
-            width={cellSize + 0.3} // slight overlap to prevent SVG sub-pixel gaps
-            height={cellSize + 0.3}
-            fill={fg}
-          />
-        )
-      }
-    }
+  if (!svg) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: bg,
+          borderRadius: 8
+        }}
+      >
+        <span className="dim small">Generando QR…</span>
+      </div>
+    )
   }
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      style={{ borderRadius: 12, background: bg, padding: 6, display: 'inline-block', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
-    >
-      <rect width={size} height={size} fill={bg} rx={12} />
-      {rects}
-    </svg>
+    <div
+      style={{
+        display: 'inline-block',
+        background: bg,
+        padding: 8,
+        borderRadius: 8,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        lineHeight: 0
+      }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
   )
 }

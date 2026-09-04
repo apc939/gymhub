@@ -127,7 +127,16 @@ const MOCK_PATIENTS = [
 
 function QRCodeModal({ code, close }) {
   const toast = useUI(s => s.toast)
-  const inviteUrl = `${window.location.origin}${window.location.pathname}#/login?code=${encodeURIComponent(code)}`
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  const [networkHost, setNetworkHost] = useState(() => {
+    return localStorage.getItem('md_network_host') || (isLocalhost ? '192.168.1.26:5173' : window.location.host)
+  })
+
+  const effectiveOrigin = isLocalhost && networkHost
+    ? `${window.location.protocol}//${networkHost}`
+    : window.location.origin
+
+  const inviteUrl = `${effectiveOrigin}${window.location.pathname}#/login?code=${encodeURIComponent(code)}`
 
   const copyLink = () => {
     navigator.clipboard?.writeText(inviteUrl).catch(() => {})
@@ -144,12 +153,34 @@ function QRCodeModal({ code, close }) {
   return (
     <div style={{ textAlign: 'center', padding: '10px 0' }}>
       <h3 style={{ margin: '0 0 6px' }}>Código QR de Vinculación</h3>
-      <div className="dim small" style={{ marginBottom: 16 }}>
+      <div className="dim small" style={{ marginBottom: 14 }}>
         Pide a tu paciente que apunte la cámara de su teléfono o compártele el enlace directo.
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', margin: '14px 0' }}>
-        <QRCode text={inviteUrl} size={210} />
+        <QRCode text={inviteUrl} size={220} />
       </div>
+
+      {isLocalhost && (
+        <div style={{ margin: '6px auto 12px', maxWidth: 360, padding: '8px 12px', background: 'rgba(255,200,0,0.08)', borderRadius: 8, border: '1px solid rgba(255,200,0,0.25)', textAlign: 'left', fontSize: 12 }}>
+          <div style={{ fontWeight: 600, color: 'var(--yellow)', marginBottom: 2 }}>
+            💡 Red Wi-Fi local para celular:
+          </div>
+          <div className="dim" style={{ marginBottom: 6, lineHeight: 1.4 }}>
+            Tu celular no puede conectarse a <code>localhost</code>. El QR usa la IP de tu computador en tu Wi-Fi para que tu cámara lo detecte:
+          </div>
+          <input
+            className="input"
+            style={{ fontSize: 12, padding: '4px 8px', height: 30, width: '100%' }}
+            value={networkHost}
+            onChange={e => {
+              setNetworkHost(e.target.value)
+              localStorage.setItem('md_network_host', e.target.value)
+            }}
+            placeholder="192.168.1.26:5173"
+          />
+        </div>
+      )}
+
       <div
         className="card"
         style={{
