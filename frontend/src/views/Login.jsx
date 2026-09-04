@@ -55,10 +55,12 @@ export default function Login() {
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }
   const head = <>
-    <div style={{ fontSize: 50, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="dumbbell" /></div>
-    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--acc)', marginTop: 8 }}>Dr. Andrés Parra</div>
-    <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-.03em', margin: '2px 0 4px' }}>GymHub</h1>
-    <div className="muted small" style={{ letterSpacing: '.02em', marginBottom: 6 }}>Medicina del Deporte · Fuerza & Salud</div>
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+      <img src="logo.png" alt="Dr. Andrés Parra Charris" style={{ width: 110, height: 110, borderRadius: '50%', objectFit: 'contain', background: '#000', border: '2px solid var(--acc)', boxShadow: '0 8px 30px rgba(0,0,0,0.45)' }} />
+    </div>
+    <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--acc)', marginTop: 2 }}>DR. ANDRÉS PARRA CHARRIS</div>
+    <h1 style={{ fontSize: 34, fontWeight: 800, letterSpacing: '-.03em', margin: '4px 0 6px' }}>GymHub</h1>
+    <div className="muted small" style={{ letterSpacing: '.02em', marginBottom: 8 }}>Medicina del Deporte · Fuerza & Salud</div>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
 

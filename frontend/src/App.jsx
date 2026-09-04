@@ -16,6 +16,7 @@ import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
 import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
+import BrandBar from './components/BrandBar.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
@@ -111,9 +112,11 @@ function Shell() {
       <div id="app" className="vfade" key={loc.pathname}>
         <ErrorBoundary>
           {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
-            <Routes>
-              <Route path="/home" element={<Home />} />
-              <Route path="/login" element={<Login />} />
+            <>
+              {loc.pathname !== '/login' && <BrandBar />}
+              <Routes>
+                <Route path="/home" element={<Home />} />
+                <Route path="/login" element={<Login />} />
               <Route path="/plan" element={<Plan />} />
               <Route path="/plan/r/:id" element={<RoutineEdit />} />
               <Route path="/workout" element={<Workout />} />
@@ -131,6 +134,7 @@ function Shell() {
               <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
+          </>
           )}
         </ErrorBoundary>
       </div>
