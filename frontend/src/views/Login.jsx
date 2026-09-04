@@ -104,36 +104,12 @@ export default function Login() {
     <div className="narrow" style={wrap}>
       {head}
 
-      {/* Doctor access card */}
-      <div className="card" style={{ padding: 18, marginBottom: 16, border: '1.5px solid var(--acc)', background: 'linear-gradient(180deg, rgba(200,255,0,0.07) 0%, rgba(0,0,0,0) 100%)', textAlign: 'left' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <Icon name="sparkles" style={{ color: 'var(--acc)' }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--acc)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
-            Acceso Especialista
-          </span>
-        </div>
-        <Button
-          variant="primary"
-          icon="sparkles"
-          onClick={() => {
-            setUser({ id: 'doc-andres-parra', name: 'Dr. Andrés Parra Charris', admin: true })
-            useUI.getState().toast('Sesión iniciada: Dr. Andrés Parra (Portal Médico)')
-            nav('/admin')
-          }}
-        >
-          Entrar al Portal Médico (Doctor)
-        </Button>
-        <div className="dim" style={{ fontSize: '.76rem', marginTop: 8, lineHeight: 1.4 }}>
-          Panel clínico: monitoreo de pacientes, semáforo de adherencia y prescripción directa de entrenamientos.
-        </div>
-      </div>
-
       {/* Patient access card */}
-      <div className="card" style={{ padding: 18, textAlign: 'left' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+      <div className="card" style={{ padding: 20, textAlign: 'left' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
           <Icon name="person" style={{ color: 'var(--label-2)' }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--label-2)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
-            Acceso Pacientes
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--label-2)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+            Acceso Pacientes & Deportistas
           </span>
         </div>
 

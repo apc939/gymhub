@@ -18,6 +18,7 @@ import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
 import BrandBar from './components/BrandBar.jsx'
 import Login from './views/Login.jsx'
+import DoctorLogin from './views/DoctorLogin.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
 import Plan from './views/Plan.jsx'
@@ -97,6 +98,9 @@ function Shell() {
   useWakeLock(!!S.active && S.keepAwake !== false)
 
   const authed = user || isGuest
+  const isDoctorRoute = loc.pathname === '/doctor' || loc.pathname === '/medico'
+  const isAuthView = loc.pathname === '/login' || isDoctorRoute
+
   if (!ready && !authed) return (
     <div id="app">
       <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center', fontSize: 34, color: 'var(--label-3)' }}>
@@ -111,35 +115,37 @@ function Shell() {
           re-mounts the boundary, so the tab bar is always a way out */}
       <div id="app" className="vfade" key={loc.pathname}>
         <ErrorBoundary>
-          {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
+          {!authed ? (isDoctorRoute ? <DoctorLogin /> : <Login />) : needsMobileOnboarding ? <MobileOnboarding /> : (
             <>
-              {loc.pathname !== '/login' && <BrandBar />}
+              {!isAuthView && <BrandBar />}
               <Routes>
                 <Route path="/home" element={<Home />} />
                 <Route path="/login" element={<Login />} />
-              <Route path="/plan" element={<Plan />} />
-              <Route path="/plan/r/:id" element={<RoutineEdit />} />
-              <Route path="/workout" element={<Workout />} />
-              <Route path="/stats" element={<Stats />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* The Coach screens gate themselves on the instance config; the routes exist
-                  unconditionally so a deep link from a notification lands somewhere sane
-                  rather than on the catch-all. */}
-              <Route path="/coach" element={<CoachChat />} />
-              <Route path="/coach/intake" element={<CoachIntake />} />
-              <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />
-              <Route path="/coach/setup" element={<CoachSetup />} />
-              <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
-              <Route path="*" element={<Navigate to="/home" replace />} />
-            </Routes>
-          </>
+                <Route path="/doctor" element={<DoctorLogin />} />
+                <Route path="/medico" element={<DoctorLogin />} />
+                <Route path="/plan" element={<Plan />} />
+                <Route path="/plan/r/:id" element={<RoutineEdit />} />
+                <Route path="/workout" element={<Workout />} />
+                <Route path="/stats" element={<Stats />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/library" element={<Library />} />
+                <Route path="/settings" element={<Settings />} />
+                {/* The Coach screens gate themselves on the instance config; the routes exist
+                    unconditionally so a deep link from a notification lands somewhere sane
+                    rather than on the catch-all. */}
+                <Route path="/coach" element={<CoachChat />} />
+                <Route path="/coach/intake" element={<CoachIntake />} />
+                <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />
+                <Route path="/coach/setup" element={<CoachSetup />} />
+                <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+                <Route path="*" element={<Navigate to="/home" replace />} />
+              </Routes>
+            </>
           )}
         </ErrorBoundary>
       </div>
       {/* The chat owns the bottom of the screen: its composer sits where the tabs would be. */}
-      {loc.pathname !== '/coach' && loc.pathname !== '/login' && <TabBar onStart={startFlow} />}
+      {loc.pathname !== '/coach' && !isAuthView && <TabBar onStart={startFlow} />}
       <RestTimer />
       <Modals />
       <Toast />
