@@ -87,3 +87,32 @@ docker compose up -d --build
 * **Firma Oficial:** **DR. ANDRÉS PARRA CHARRIS** (Medicina del Deporte · Fuerza & Salud).
 * **Componente de Marca Global:** [`frontend/src/components/BrandBar.jsx`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/src/components/BrandBar.jsx) se renderiza en la parte superior de todas las vistas de la aplicación.
 * **Activo del Logotipo:** [`frontend/public/logo.png`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/public/logo.png).
+
+---
+
+## 📲 Flujo de Vinculación por QR y Separación de Accesos
+
+1. **Separación de Accesos:**
+   - **Pacientes:** Ingresan por `/#/login` (vista 100% limpia, sin enlaces ni botones hacia el portal médico).
+   - **Médico:** Acceso privado y reservado mediante `/#/doctor` o `/#/medico` ([`DoctorLogin.jsx`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/src/views/DoctorLogin.jsx)).
+2. **Vinculación por Código QR Offline:**
+   - Generación de códigos QR mediante algoritmo nativo zero-dependencies ([`frontend/src/lib/qr.js`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/src/lib/qr.js) y [`QRCode.jsx`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/src/components/QRCode.jsx)).
+   - Enlace generado: `/#/login?code=<CODIGO>`. Al escanear con la cámara del teléfono, el paciente abre la app con el código pre-cargado y la confirmación de vinculación con el Dr. Andrés Parra Charris.
+   - Envío instantáneo por WhatsApp con mensaje médico precargado.
+
+---
+
+## 🏃 Prescripción de Ejercicio Cardiorrespiratorio y Reporte Post-Actividad
+
+1. **Prescripción Médica (Admin):**
+   - Modal de prescripción con selector de modalidad (Caminata, Trote suave, Bicicleta, Natación, Elíptica).
+   - Metas semanales en minutos (ej. 30 min × 3 días = 90 min/semana).
+   - Intensidad guiada por el **Talk Test (Test del Habla)**:
+     - *Suave*: Puede cantar o mantener conversación fluida.
+     - *Moderada*: Puede hablar cómodamente pero no cantar.
+     - *Exigente*: Solo puede responder con frases cortas.
+2. **Registro del Paciente (Home):**
+   - Tarjeta semanal de progreso cardiorrespiratorio en [`Home.jsx`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/src/views/Home.jsx).
+   - Registro rápido post-actividad (<10 segundos) en [`CardioLogSheet.jsx`](file:///Users/apc939/Desktop/AppEjercicios/gymhub/frontend/src/components/CardioLogSheet.jsx) sin cronómetros en vivo obligatorios.
+   - Monitoreo inmediato de esfuerzo percibido (😊 Fácil, 👍 Adecuado, 🥵 Exigente) y detección de dolor articular con selector de zona anatómica.
+

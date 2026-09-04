@@ -20,14 +20,24 @@ export default function BrandBar() {
           <span className="brand-bar-sub">GymHub · Medicina del Deporte</span>
         </div>
       </div>
-      <div className="brand-bar-right" onClick={e => { e.stopPropagation(); nav('/settings') }}>
+      <div className="brand-bar-right" onClick={e => e.stopPropagation()}>
+        {user?.admin && (
+          <button
+            className="brand-doctor-btn"
+            onClick={() => nav('/admin')}
+            title="Portal Médico de Pacientes"
+          >
+            <Icon name="sparkles" />
+            <span>Portal Médico</span>
+          </button>
+        )}
         {S.active ? (
-          <span className="brand-status-badge active" onClick={e => { e.stopPropagation(); nav('/workout') }}>
+          <span className="brand-status-badge active" onClick={() => nav('/workout')}>
             <span className="pulse-dot" />
-            <span>En entrenamiento</span>
+            <span>En sesión</span>
           </span>
         ) : (
-          <span className="brand-profile-pill" title={user ? user.name : 'Ajustes'}>
+          <span className="brand-profile-pill" onClick={() => nav('/settings')} title={user ? user.name : 'Ajustes'}>
             <Icon name="personCircle" />
             <span className="brand-user-name">{user ? user.name : 'Invitado'}</span>
           </span>

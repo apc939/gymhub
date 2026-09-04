@@ -5,9 +5,11 @@ import { effectiveRoutine, effectiveRoutineId, nextTrainingDay, streakWeeks, las
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor } from '../sheets.jsx'
+import { useUI } from '../store/useUI.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
+import CardioLogSheet from '../components/CardioLogSheet.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 
@@ -55,6 +57,18 @@ export default function Home() {
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (routine) startFlow(routine.id); else dayOverrideSheet(todayISO()) }
 
+  const cardioLogs = S.cardioLogs || []
+  const cardioThisWeek = cardioLogs.filter(c => weekKey(c.date, ws) === weekKey(todayISO(), ws))
+  const cardioMinutesThisWeek = cardioThisWeek.reduce((sum, c) => sum + (Number(c.minutes) || 0), 0)
+  const prescription = S.cardioPrescription || {
+    type: 'Caminata',
+    targetMinutes: 30,
+    frequencyPerWeek: 3,
+    intensity: 'moderada',
+    note: 'Ritmo cómodo donde puedas conversar sin fatigarte'
+  }
+  const weeklyTargetMinutes = (prescription.targetMinutes || 30) * (prescription.frequencyPerWeek || 3)
+
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{user ? t('Hi {0}', user.name) : 'GymHub'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
@@ -92,6 +106,57 @@ export default function Home() {
           : routine ? <span className="tag acc">{t('Start')}</span>
           : <Icon name="plus" className="chev" />}
       </div>
+    </div>
+
+    {/* Card: Ejercicio Cardiorrespiratorio y Aeróbico Prescrito */}
+    <div className="card">
+      <div className="row between" style={{ marginBottom: 8 }}>
+        <div className="row" style={{ gap: 9, minWidth: 0 }}>
+          <span className="lrow-i" style={{ background: 'color-mix(in srgb,var(--blue) 18%,transparent)', color: 'var(--blue)' }}>
+            <Icon name="flame" />
+          </span>
+          <div style={{ minWidth: 0 }}>
+            <div className="lbl2">Ejercicio Cardiorrespiratorio</div>
+            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
+              {prescription.type} ({prescription.targetMinutes} min)
+            </div>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="primary"
+          icon="plus"
+          onClick={() => useUI.getState().openSheet(c => <CardioLogSheet close={c} prescription={prescription} />)}
+        >
+          Registrar
+        </Button>
+      </div>
+
+      <div style={{ margin: '10px 0 6px' }}>
+        <div className="row between small" style={{ marginBottom: 4 }}>
+          <span className="muted">Progreso semanal de minutos:</span>
+          <span style={{ fontWeight: 600, color: cardioMinutesThisWeek >= weeklyTargetMinutes ? 'var(--green)' : 'inherit' }}>
+            {cardioMinutesThisWeek} / {weeklyTargetMinutes} min {cardioMinutesThisWeek >= weeklyTargetMinutes && '✓'}
+          </span>
+        </div>
+        <div style={{ width: '100%', height: 7, background: 'var(--surface-3)', borderRadius: 4, overflow: 'hidden' }}>
+          <div
+            style={{
+              width: `${Math.min(100, Math.round((cardioMinutesThisWeek / (weeklyTargetMinutes || 1)) * 100))}%`,
+              height: '100%',
+              background: cardioMinutesThisWeek >= weeklyTargetMinutes ? 'var(--green)' : 'var(--blue)',
+              borderRadius: 4,
+              transition: 'width .3s ease'
+            }}
+          />
+        </div>
+      </div>
+
+      {prescription.note && (
+        <div className="dim small" style={{ marginTop: 6, fontStyle: 'italic' }}>
+          Indicación médica: "{prescription.note}"
+        </div>
+      )}
     </div>
 
     {!S.routines.length && !S.active && (

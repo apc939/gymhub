@@ -34,6 +34,9 @@ export const DEF = {
   // lib/bar.js). Personal equipment, so it syncs with the account but never travels in a
   // shared plan. Logged weights stay the total — this only feeds the plate math.
   barWeights: {},
+  // Clinical cardio prescription and logged sessions for sports medicine monitoring
+  cardioPrescription: null,
+  cardioLogs: [],
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
